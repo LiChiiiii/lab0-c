@@ -405,7 +405,6 @@ static bool do_web(int argc, char *argv[])
     web_fd = web_open(port);
     if (web_fd > 0) {
         printf("listen on port %d, fd is %d\n", port, web_fd);
-        use_linenoise = false;
     } else {
         perror("ERROR");
         exit(web_fd);
@@ -687,7 +686,7 @@ bool run_console(char *infile_name)
 
     if (!has_infile) {
         char *cmdline;
-        while (use_linenoise && (cmdline = linenoise(prompt))) {
+        while (use_linenoise && (cmdline = linenoise(prompt, web_fd))) {
             interpret_cmd(cmdline);
             line_history_add(cmdline);       /* Add to the history. */
             line_history_save(HISTORY_FILE); /* Save the history on disk. */
