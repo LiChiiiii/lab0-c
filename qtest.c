@@ -946,6 +946,64 @@ static bool do_next(int argc, char *argv[])
     return q_show(0);
 }
 
+/* Fisher–Yates shuffle */
+void value_swap(struct list_head *node1, struct list_head *node2)
+{
+    element_t *node1_ele = list_entry(node1, element_t, list);
+    element_t *node2_ele = list_entry(node2, element_t, list);
+    char *temp;
+
+    temp = node1_ele->value;
+    node1_ele->value = node2_ele->value;
+    node2_ele->value = temp;
+}
+void q_shuffle(struct list_head *head)
+{
+    if (!head || list_is_singular(head) || list_empty(head))
+        return;
+
+    struct list_head *last = head->prev;
+    struct list_head *cur = head->next;
+
+    int len = q_size(head);
+    srand(time(NULL));
+    while (len) {
+        int i = rand() % len;
+
+        while (i) {
+            cur = cur->next;
+            i--;
+        }
+
+        value_swap(cur, last);
+        last = last->prev;
+        cur = head->next;
+
+        len--;
+    }
+}
+static inline bool do_shuffle(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    if (!current) {
+        report(3, "Warning: Try to operate null queue");
+        return false;
+    }
+    error_check();
+
+    set_noallocate_mode(true);
+    if (current && exception_setup(true))
+        q_shuffle(current->q);
+    exception_cancel();
+    set_noallocate_mode(false);
+
+    return q_show(3);
+}
+/*----------------------*/
 static void console_init()
 {
     ADD_COMMAND(new, "Create new queue", "");
@@ -982,6 +1040,7 @@ static void console_init()
                 "");
     ADD_COMMAND(reverseK, "Reverse the nodes of the queue 'K' at a time",
                 "[K]");
+    ADD_COMMAND(shuffle, "Implement Fisher–Yates shuffle", "");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
