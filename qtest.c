@@ -72,6 +72,7 @@ static int fail_limit = BIG_LIST_SIZE;
 static int fail_count = 0;
 
 static int string_length = MAXSTRING;
+static int is_enable_tree_sort = 0;
 
 #define MIN_RANDSTR_LEN 5
 #define MAX_RANDSTR_LEN 10
@@ -84,6 +85,7 @@ typedef enum {
 /* Forward declarations */
 static bool q_show(int vlevel);
 
+void tree_sort(struct list_head *head);
 static bool do_free(int argc, char *argv[])
 {
     if (argc != 1) {
@@ -596,11 +598,14 @@ bool do_sort(int argc, char *argv[])
         report(3, "Warning: Calling sort on single node");
     error_check();
 
-    set_noallocate_mode(true);
-    if (current && exception_setup(true))
-        q_sort(current->q);
+    if (current && exception_setup(true)) {
+        if (is_enable_tree_sort) {
+            tree_sort(current->q);
+        } else {
+            q_sort(current->q);
+        }
+    }
     exception_cancel();
-    set_noallocate_mode(false);
 
     bool ok = true;
     if (current && current->size) {
@@ -1047,6 +1052,8 @@ static void console_init()
               NULL);
     add_param("fail", &fail_limit,
               "Number of times allow queue operations to return false", NULL);
+    add_param("tree_sort", &is_enable_tree_sort, "Enable red black tree sort",
+              NULL);
 }
 
 /* Signal handlers */

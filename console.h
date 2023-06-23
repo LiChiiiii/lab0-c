@@ -9,7 +9,7 @@
 #define HISTORY_FILE ".cmd_history"
 
 /* Implementation of simple command-line interface */
-
+extern int is_enable_linux_sort;
 /* Simulation flag of console option */
 extern int simulation;
 
